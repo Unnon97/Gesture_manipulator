@@ -1,4 +1,4 @@
-# GestureManibot Project
+# Gesture Manipulator Project
 This is a self-learning project that focuses on using the Moveit2 and ROS humble to develop a pipeline that uses simple hand gestures recognised through webcam to enable a manipulator robot to operate on objects nearby.
 The main concept used here is the Moveit Task constructor which helps in developing tasks in form of stages. 
 

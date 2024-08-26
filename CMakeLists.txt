@@ -7,6 +7,7 @@ endif()
 
 # find dependencies
 find_package(ament_cmake REQUIRED)
+find_package(moveit_task_constructor_core REQUIRED)
 find_package(ament_cmake_python REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rclpy REQUIRED)
@@ -14,7 +15,7 @@ find_package(rclpy REQUIRED)
 include_directories(include)
 
 add_executable(cpp_exec src/moveit_stage.cpp)
-ament_target_dependencies(cpp_exec rclcpp)
+ament_target_dependencies(cpp_exec moveit_task_constructor_core rclcpp)
 
 install(TARGETS
   cpp_exec
@@ -23,10 +24,10 @@ install(TARGETS
 
 ament_python_install_package(${PROJECT_NAME})
 
-install(PROGRAMS
-  scripts/runnonde.py
-  DESTINATION lib/${PROJECT_NAME}  
-)
+# install(PROGRAMS
+#   scripts/runnonde.py
+#   DESTINATION lib/${PROJECT_NAME}  
+# )
 
 
 if(BUILD_TESTING)
