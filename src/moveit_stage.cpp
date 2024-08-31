@@ -1,3 +1,4 @@
+#include <rclcpp/logging.hpp>
 #include <rclcpp/node.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include "std_msgs/msg/string.hpp"
@@ -25,12 +26,7 @@ namespace mtc = moveit::task_constructor;
 class MoveitTaskNode : public rclcpp::Node
 {
     public:
-        MoveitTaskNode() : Node("Moveit_Task_Node")
-        {
-            stage_subscriber = this->create_subscription<std_msgs::msg::String>(
-                "/move_manipulator",10, std::bind(&MoveitTaskNode::commandCallback, this, std::placeholders::_1));
-        }
-
+        MoveitTaskNode();
         void doTask();
 
         void setupPlanningScene();
@@ -42,19 +38,32 @@ class MoveitTaskNode : public rclcpp::Node
         rclcpp::Node::SharedPtr node_;
         rclcpp::Subscription<std_msgs::msg::String>::SharedPtr stage_subscriber;
         void commandCallback(const std_msgs::msg::String::SharedPtr msg)
-        {
-            std::cout<<"DA"<<msg->data;
-            
-            if (!msg->data.compare("run_stage1")) {
-                doTask();
+        {   
+
+            if (msg->data == "open_gripper") {
+              RCLCPP_INFO(this->get_logger(),"Opening gripper now.....");
             }
+            else if (msg->data == "pick_object") {
+              RCLCPP_INFO(this->get_logger(),"Picking object now.....");
+            }
+            else if (msg->data == "turn_right") {
+              RCLCPP_INFO(this->get_logger(),"Turning right now.....");
+            }
+            else if (msg->data == "runs_stage1") {
+              RCLCPP_INFO(this->get_logger(),"WILL run stage 1 now");
+            } 
             else {
-                RCLCPP_INFO(this->get_logger(), "Unknown command received: %s", msg->data.c_str());
+                RCLCPP_INFO(this->get_logger(), "Inside Unknown command received: %s", msg->data.c_str());
             }
         }
 };
 
-
+MoveitTaskNode::MoveitTaskNode() : Node("moveit_task_node")
+{
+  stage_subscriber = this->create_subscription<std_msgs::msg::String>(
+                "/move_manipulator",10, std::bind(&MoveitTaskNode::commandCallback, this, std::placeholders::_1));
+        
+}
 void MoveitTaskNode::setupPlanningScene()
 {
     moveit_msgs::msg::CollisionObject object;
@@ -242,18 +251,16 @@ mtc::Task MoveitTaskNode::createTask()
 
 int main(int argc, char **argv)
 {
+  rclcpp::init(argc, argv);
 
   auto mtc_task_node = std::make_shared<MoveitTaskNode>();
   rclcpp::executors::MultiThreadedExecutor executor;
 
   auto spin_thread = std::make_unique<std::thread>([&executor, &mtc_task_node]() {
-    executor.add_node(mtc_task_node);
     executor.spin();
-    executor.remove_node(mtc_task_node);
   });
 
   mtc_task_node->setupPlanningScene();
-  mtc_task_node->doTask();
 
   spin_thread->join();
   rclcpp::shutdown();
